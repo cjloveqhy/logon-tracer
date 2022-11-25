@@ -3,10 +3,49 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.github.logon-tracer</groupId>
+  <groupId>logon.tracer</groupId>
   <artifactId>logon-tracer</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.1</version>
+  <version>0.0.3-beta2</version>
+
+  <licenses>
+    <!-- Apache许可证 -->
+    <license>
+      <name>The MIT License</name>
+      <url>https://github.com/logon-tracer/core/blob/main/LICENSE</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:github://github.com/logon-tracer/core</connection>
+    <developerConnection>scm:git@github.com:logon-tracer/core.git</developerConnection>
+    <url>https://github.com/logon-tracer/core</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Elone Hoo</name>
+      <email>huchengyea@163.com</email>
+      <url>https://github.com/elonehoo</url>
+    </developer>
+    <developer>
+      <name>wuaqing</name>
+      <url>https://github.com/wuaqing</url>
+    </developer>
+    <developer>
+      <name>cjloveqhy</name>
+      <url>https://github.com/cjloveqhy</url>
+    </developer>
+    <developer>
+      <name>zhy</name>
+      <url>https://github.com/2434017367</url>
+    </developer>
+    <developer>
+      <name>李晨</name>
+      <url>https://github.com/LiChen233</url>
+    </developer>
+  </developers>
+
   <modules>
     <module>basic</module>
     <module>aspect</module>
@@ -18,9 +57,10 @@
 
   <name>logon-tracer</name>
   <description>Monitor the specified exception thrown in the log or the specified exception thrown in the method and class</description>
+  <url>https://github.com/logon-tracer/core</url>
 
   <properties>
-    <java.version>11</java.version>
+    <java.version>17</java.version>
     <log4j.version>1.2.17</log4j.version>
     <log4j12.version>2.0.3</log4j12.version>
     <mail.version>1.6.7</mail.version>
@@ -53,12 +93,20 @@
     </dependency>
   </dependencies>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -67,7 +115,144 @@
           <target>11</target>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createSourcesJar>true</createSourcesJar>
+              <artifactSet>
+                <includes>
+                  <include>${project.groupId}:*:*</include>
+                </includes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/maven/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Javadoc -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.4.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
+  <profiles>
+    <profile>
+      <id>release</id>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+          <id>ossrh</id>
+          <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
+      <build>
+        <plugins>
+          <!-- Source -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.2.1</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- Javadoc -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <additionalJOption>-Xdoclint:none</additionalJOption>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <!-- Prevent `gpg` from using pinentry programs -->
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.13</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>false</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release-github</id> <!-- deploy to github -->
+      <distributionManagement>
+        <repository>
+          <id>github</id>
+          <name>GitHub Packages</name>
+          <url>https://maven.pkg.github.com/logon-tracer/core</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 </project>
